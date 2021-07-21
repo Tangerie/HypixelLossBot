@@ -42,62 +42,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var data_1 = __importDefault(require("../lib/data"));
 var util_1 = require("../lib/util");
 module.exports = {
-    name: "link",
-    description: "Link your Discord ID to your MC Username",
+    name: "notify",
+    description: "[ADMIN] Set the channel for notifications",
+    admin: true,
     options: [
         {
-            name: 'username',
-            description: 'Minecraft Username',
+            name: 'channel',
+            description: 'Channel for loss notifications',
             required: true,
-            type: 3
+            type: 7
         }
     ],
     execute: function (args, interaction, client) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var hypixel, player;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        hypixel = util_1.GetHypixelApi();
-                        return [4 /*yield*/, hypixel.getPlayer(args.username).catch(function (err) { return undefined; })];
-                    case 1:
-                        player = _c.sent();
-                        if (player == undefined) {
-                            util_1.RespondToInteraction(client, interaction, {
-                                embeds: [
-                                    {
-                                        title: "Profile Not Found",
-                                        type: "rich",
-                                        color: 15158332
-                                    }
-                                ]
-                            });
-                            return [2 /*return*/];
-                        }
-                        //Link Profile
-                        data_1.default().setUserLink(player.nickname, interaction.member.user.id);
-                        util_1.RespondToInteraction(client, interaction, {
-                            embeds: [
-                                {
-                                    title: "Profile Linked Sucessfully",
-                                    type: "rich",
-                                    fields: [
-                                        {
-                                            "name": "Username",
-                                            "value": player.nickname
-                                        },
-                                        {
-                                            "name": "Bedwars Win Streak",
-                                            "value": (_b = (_a = player.stats) === null || _a === void 0 ? void 0 : _a.bedwars) === null || _b === void 0 ? void 0 : _b.winstreak
-                                        }
-                                    ],
-                                    color: 3066993
-                                }
-                            ]
-                        });
-                        return [2 /*return*/];
+            var chan, dMan;
+            return __generator(this, function (_a) {
+                chan = client.channels.cache.get(args.channel);
+                if (!chan || chan.type != "text") {
+                    util_1.RespondToInteraction(client, interaction, {
+                        embeds: [
+                            {
+                                title: "Invalid Text Channel",
+                                type: "rich",
+                                color: 15158332
+                            }
+                        ]
+                    });
+                    return [2 /*return*/];
                 }
+                dMan = data_1.default();
+                dMan.setNotifyChannel(interaction.guild_id, chan.id);
+                util_1.RespondToInteraction(client, interaction, {
+                    embeds: [
+                        {
+                            title: "Registered For Notifications",
+                            type: "rich",
+                            color: 3066993
+                        }
+                    ]
+                });
+                return [2 /*return*/];
             });
         });
     }

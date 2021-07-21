@@ -1,8 +1,12 @@
 require('dotenv').config();
+const insulter = require('insult');
 
 import Discord from 'discord.js';
 import fs from 'fs';
+import { BedWars } from 'hypixel-api-reborn';
+import GetDataManager from './lib/data';
 import { GetHypixelApi, RespondToInteraction } from "./lib/util";
+
 
 //https://discord.com/oauth2/authorize?client_id=867366033572888608&scope=bot+applications.commands
 //#region token checks
@@ -32,10 +36,7 @@ client.login(process.env.DISCORD_TOKEN);
 
 const clientCommands = new Discord.Collection<string, any>();
 
-function onBotReady() : void {
-	console.log('Client Ready');
-
-
+async function onBotReady() : Promise<void> {
 	const commandFiles = fs.readdirSync(`${__dirname}/commands`).filter((file : any) => file.endsWith('.js'));
 
 	for (const file of commandFiles) {
@@ -45,14 +46,16 @@ function onBotReady() : void {
 
 
 	for (const guild of client.guilds.cache.map((guild : any) => guild)) {
-		registerCommandsForGuild(guild.id);
+		await registerCommandsForGuild(guild.id);
 		console.log(`[${guild.name}] Slash Commands Registered`);
 	}
+
+	console.log("Bot Loaded");
 }
 
-function registerCommandsForGuild(guildId : string) : void {
+async function registerCommandsForGuild(guildId : string) : Promise<void> {
 	for(const cmd of clientCommands.array()) {
-		registerSingleCommand(guildId, {
+		await registerSingleCommand(guildId, {
 			data: {
 				name: cmd.name,
 				description: cmd.description,
@@ -62,9 +65,9 @@ function registerCommandsForGuild(guildId : string) : void {
 	}
 }
 
-function registerSingleCommand(guildId : string, data : any) {
+async function registerSingleCommand(guildId : string, data : any) {
 	/* @ts-ignore */
-	client.api.applications(client.user.id).guilds(guildId).commands.post(data);
+	await client.api.applications(client.user.id).guilds(guildId).commands.post(data);
 }
 
 interface InteractionData {
@@ -91,7 +94,6 @@ function unpackInteraction(interaction : any) : InteractionData {
 }
 
 async function onInteractionCreate(interaction : any) {
-	console.log("Interaction Recieved");
 
 	const { cmd, args } = unpackInteraction(interaction);
 	
@@ -111,5 +113,87 @@ async function onInteractionCreate(interaction : any) {
 		return;
 	}
 
-	clientCommands.get(cmd).execute(args, interaction, client);
+	const command = clientCommands.get(cmd);
+
+	if(command.admin) {
+		//ADMIN CHECK
+		if(interaction.member.user.id != process.env.MY_ID) {
+			RespondToInteraction(client, interaction, {
+				content: "",
+				embeds: [
+					{
+						title: "Permissions Error",
+						type: "rich",
+						description: "Must be admin",
+						color: 15158332 //RED
+					}
+				]
+			})
+			return;
+		}
+	}
+
+	await clientCommands.get(cmd).execute(args, interaction, client);
 }
+
+const lastCycleStats = new Map<string, BedWars>();
+//Max requests = 120/min
+const MAX_REQUESTS_PER_MIN = 120;
+const INTERVAL_SEC = 20;
+const MAX_REQUESTS_PER_CYCLE = (INTERVAL_SEC / 60) * MAX_REQUESTS_PER_MIN;
+setInterval(async () => {
+	if(!client || !client.readyAt) return;
+	let requestsMade = 0;
+	for(const [username, discordId] of GetDataManager().getUsers().entries()) {
+		if(requestsMade > MAX_REQUESTS_PER_CYCLE) return;
+
+		const player = await GetHypixelApi().getPlayer(username, {
+			noCacheCheck: true,
+			noCaching: true
+		}).catch(()=>{});
+		requestsMade++;
+
+		if(!player) {
+			//remove it and msg player
+			return;
+		} else if(!player.stats || !player.stats.bedwars) {
+			return;
+		}
+
+		if(lastCycleStats.has(username)) {
+			const lastStats = lastCycleStats.get(username);
+			if(lastStats?.finalDeaths != player.stats.bedwars.finalDeaths) {
+				//Find servers of player
+				for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
+					const guild = client.guilds.cache.get(guildId);
+					if(!guild) continue;
+					const member = await guild.members.fetch(discordId);
+					if(member) {
+						const chan = guild.channels.cache.get(channelId);
+						if(!chan) continue;
+
+						/* @ts-ignore */
+						chan.send({
+							embed: {
+								title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) Lost a Bedwars match`,
+								description: `This is for you: ${insulter.Insult()}`,
+								type: "rich",
+								color: 15158332,
+								fields: [
+									{
+										name: "Win streak lost",
+										value: player.stats.bedwars.winstreak
+									}
+								]
+							}
+						})
+					}
+				}
+			}
+		}
+
+		lastCycleStats.set(username, player.stats.bedwars);
+	}
+	//Check player stats
+	//console.log("Checking Player Stats");
+}, INTERVAL_SEC * 1000);

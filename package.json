@@ -18,6 +18,7 @@
   "dependencies": {
     "discord.js": "^12.5.3",
     "dotenv": "^10.0.0",
-    "hypixel-api-reborn": "^8.2.0"
+    "hypixel-api-reborn": "^8.2.0",
+    "insult": "^0.0.3"
   }
 }
