@@ -1,0 +1,17 @@
+{
+  "name": "HypixellLossBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "tsc && node build/index.js",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsc-watch": "^4.4.0",
+    "typescript": "^4.3.5"
+  }
+}
