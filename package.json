@@ -16,7 +16,6 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@typeit/discord": "^4.0.10",
     "discord.js": "^12.5.3",
     "dotenv": "^10.0.0",
     "hypixel-api-reborn": "^8.2.0"
