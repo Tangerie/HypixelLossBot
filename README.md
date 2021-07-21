@@ -3,7 +3,7 @@
 Announces when a player loses a bedwars match and humiliates them (and other fun stuff)
 
 ## Changing Token
-Edit the `.env` files in `builds` to add your discord and hypixel api token
+Edit the `.env` file to add your discord and hypixel api token
 
 ## Running the code
 Install the dependencies with
