@@ -222,13 +222,8 @@ setInterval(async () => {
 								color: 15158332,
 								fields: [
 									{
-										name: "Win streak lost",
-										value: lastStats?.bedwars?.winstreak.toString(),
-										inline: true
-									},
-									{
 										name: "W/L Dropped By",
-										value: Math.abs(player.stats.bedwars.WLRatio - (lastStats?.bedwars?.WLRatio ?? 0)).toString(),
+										value: Math.abs(((lastStats?.bedwars?.wins ?? 1) / (lastStats?.bedwars?.losses ?? 1) ) - (player.stats.bedwars.wins / player.stats.bedwars.losses)).toString(),
 										inline: true
 									},
 								]
