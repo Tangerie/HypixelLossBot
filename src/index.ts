@@ -224,7 +224,7 @@ setInterval(async () => {
 									},
 									{
 										name: "W/L Dropped By",
-										value: (player.stats.bedwars.WLRatio - (lastStats?.bedwars?.WLRatio ?? 0)).toString(),
+										value: Math.abs(player.stats.bedwars.WLRatio - (lastStats?.bedwars?.WLRatio ?? 0)).toString(),
 										inline: true
 									},
 								]
