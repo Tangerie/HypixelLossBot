@@ -45,6 +45,10 @@ client.login(process.env.DISCORD_TOKEN);
 const clientCommands = new Discord.Collection<string, any>();
 
 async function onBotReady() : Promise<void> {
+	await client.user?.setActivity(`you fail`, {
+		type: "WATCHING",
+	});
+	
 	const commandFiles = fs.readdirSync(`${__dirname}/commands`).filter((file : any) => file.endsWith('.js'));
 
 	for (const file of commandFiles) {
