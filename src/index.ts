@@ -219,8 +219,14 @@ setInterval(async () => {
 								fields: [
 									{
 										name: "Win streak lost",
-										value: lastStats?.bedwars?.winstreak
-									}
+										value: lastStats?.bedwars?.winstreak.toString(),
+										inline: true
+									},
+									{
+										name: "W/L Dropped By",
+										value: (player.stats.bedwars.WLRatio - (lastStats?.bedwars?.WLRatio ?? 0)).toString(),
+										inline: true
+									},
 								]
 							}
 						})
