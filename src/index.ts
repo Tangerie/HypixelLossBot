@@ -161,7 +161,7 @@ interface PlayerStats {
 
 const lastCycleStats = new Map<string, PlayerStats>();
 //Max requests = 120/min
-const MAX_REQUESTS_PER_MIN = 90;
+const MAX_REQUESTS_PER_MIN = 100;
 const INTERVAL_SEC = 60;
 const MAX_REQUESTS_PER_CYCLE = (INTERVAL_SEC / 60) * MAX_REQUESTS_PER_MIN;
 setInterval(async () => {
