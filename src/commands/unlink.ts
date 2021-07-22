@@ -1,6 +1,6 @@
 import { Client, MessageEmbed } from "discord.js";
 import GetDataManager from "../lib/data";
-import { GetHypixelApi, RespondToInteraction } from "../lib/util";
+import { RespondToInteraction } from "../lib/util";
 
 module.exports = {
     name: "unlink",

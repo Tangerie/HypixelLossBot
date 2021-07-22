@@ -4,8 +4,9 @@ const insulter = require('insult');
 import Discord, { Guild } from 'discord.js';
 import fs from 'fs';
 import { Arcade, ArenaBrawl, BedWars, BlitzSurvivalGames, BuildBattle, CopsAndCrims, Duels, MegaWalls, MurderMystery, SkyWars, SmashHeroes, SpeedUHC, TNTGames, UHC, VampireZ } from 'hypixel-api-reborn';
+import getHypixelClient, { BedwarsWinLoseEvent } from './hypixel/client';
 import GetDataManager from './lib/data';
-import { GetHypixelApi, RespondToInteraction } from "./lib/util";
+import { RespondToInteraction } from "./lib/util";
 
 
 //https://discord.com/oauth2/authorize?client_id=867366033572888608&scope=bot+applications.commands
@@ -26,7 +27,7 @@ if(process.env.HYPIXEL_TOKEN == undefined) {
 }
 //#endregion
 
-const hypixelClient = GetHypixelApi();
+const hypixelClient = getHypixelClient();
 const client = new Discord.Client({ ws: { intents: ['GUILDS'] } });
 
 //#region events
@@ -36,6 +37,9 @@ client.ws.on('INTERACTION_CREATE', onInteractionCreate);
 
 client.on("guildCreate", onGuildJoin);
 client.on("guildDelete", onGuildLeave);
+
+hypixelClient.on("bedwars.loss", onPlayerBedwarsLose);
+hypixelClient.on("bedwars.win", onPlayerBedwarsWin);
 //#endregion
 
 //#region start
@@ -60,6 +64,11 @@ async function onBotReady() : Promise<void> {
 	for (const guild of client.guilds.cache.map((guild : any) => guild)) {
 		await registerCommandsForGuild(guild.id);
 		console.log(`[${guild.name}] Slash Commands Registered`);
+
+		if(!GetDataManager().getRecordingPeriod(guild.id)){
+			console.log(`[${guild.name}] Started Recording Period`);
+			GetDataManager().startRecordingPeriod(guild.id);
+		}
 	}
 
 	console.log("Bot Loaded");
@@ -85,6 +94,9 @@ async function registerSingleCommand(guildId : string, data : any) {
 async function onGuildJoin(guild : Guild) {
 	console.log(`[${guild.name}] Slash Commands Registered`);
 	await registerCommandsForGuild(guild.id);
+	
+	console.log(`[${guild.name}] Started Recording Period`);
+	GetDataManager().startRecordingPeriod(guild.id);
 }
 
 async function onGuildLeave(guild : Guild) {
@@ -158,84 +170,47 @@ async function onInteractionCreate(interaction : any) {
 	await clientCommands.get(cmd).execute(args, interaction, client);
 }
 
-interface PlayerStats {
-	skywars?: SkyWars,
-	bedwars?: BedWars,
-	uhc?: UHC,
-	speeduhc?: SpeedUHC,
-	murdermystery?: MurderMystery,
-	duels?: Duels,
-	buildbattle?: BuildBattle,
-	megawalls?: MegaWalls,
-	copsandcrims?: CopsAndCrims,
-	tntgames?: TNTGames,
-	smashheroes?: SmashHeroes,
-	vampirez?: VampireZ,
-	blitzsg?: BlitzSurvivalGames,
-	arena?: ArenaBrawl,
-	arcade?: Arcade
-};
 
-const lastCycleStats = new Map<string, PlayerStats>();
-//Max requests = 120/min
-const MAX_REQUESTS_PER_MIN = 100;
-const INTERVAL_SEC = 20;
-const MAX_REQUESTS_PER_CYCLE = (INTERVAL_SEC / 60) * MAX_REQUESTS_PER_MIN;
-setInterval(async () => {
-	if(!client || !client.readyAt) return;
-	let requestsMade = 0;
-	for(const [username, discordId] of GetDataManager().getUsers().entries()) {
-		if(requestsMade > MAX_REQUESTS_PER_CYCLE) return;
+async function onPlayerBedwarsLose(event : BedwarsWinLoseEvent) {
+	console.log(`Lose Event Fired: ${event.player.nickname}`);
+	
+	const disId = GetDataManager().getUser(event.player.nickname);
+	if(!event.cur || !event.last || !disId) return;
 
-		const player = await GetHypixelApi().getPlayer(username, {
-			noCacheCheck: true,
-			noCaching: true
-		}).catch(()=>{});
-		requestsMade++;
+	GetDataManager().updatePlayersRecordings(event.player.nickname, disId, client, event.last, event.cur);
+	
+	for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
+		const guild = client.guilds.cache.get(guildId);
+		if(!guild) continue;
+		const member = await guild.members.fetch(disId).catch(() => {});
+		if(!member) continue;
+		const chan = guild.channels.cache.get(channelId);
+		if(!chan) continue;
 
-		if(!player) {
-			//remove it and msg player
-			return;
-		} else if(!player.stats || !player.stats.bedwars) {
-			player.stats
-			return;
-		}
-
-		if(lastCycleStats.has(username)) {
-			const lastStats = lastCycleStats.get(username);
-			if(lastStats?.bedwars?.finalDeaths != player.stats.bedwars.finalDeaths) {
-				//Find servers of player
-				for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
-					const guild = client.guilds.cache.get(guildId);
-					if(!guild) continue;
-					const member = await guild.members.fetch(discordId).catch(() => {});
-					if(member) {
-						const chan = guild.channels.cache.get(channelId);
-						if(!chan) continue;
-
-						/* @ts-ignore */
-						chan.send({
-							embed: {
-								title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) Lost a Bedwars match`,
-								description: `This is for you: ${insulter.Insult()}`,
-								type: "rich",
-								color: 15158332,
-								fields: [
-									{
-										name: "W/L Dropped By",
-										value: Math.abs(((lastStats?.bedwars?.wins ?? 1) / (lastStats?.bedwars?.losses ?? 1) ) - (player.stats.bedwars.wins / player.stats.bedwars.losses)).toString(),
-										inline: true
-									},
-								]
-							}
-						})
-					}
-				}
+		/* @ts-ignore */
+		chan.send({
+			embed: {
+				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) Lost a Bedwars match`,
+				description: `This is for you: ${insulter.Insult()}`,
+				type: "rich",
+				color: 15158332,
+				fields: [
+					{
+						name: "W/L Dropped By",
+						value: (event.last.wins / event.last.losses - event.cur.wins / event.cur.losses).toString(),
+						inline: false
+					},
+				]
 			}
-		}
-
-		lastCycleStats.set(username, player.stats);
+		})
 	}
-	//Check player stats
-	//console.log("Checking Player Stats");
-}, INTERVAL_SEC * 1000);
+}
+
+async function onPlayerBedwarsWin(event : BedwarsWinLoseEvent) {
+	console.log(`Win Event Fired: ${event.player.nickname}`);
+
+	const disId = GetDataManager().getUser(event.player.nickname);
+	if(!event.cur || !event.last || !disId) return;
+
+	GetDataManager().updatePlayersRecordings(event.player.nickname, disId, client, event.last, event.cur);
+}

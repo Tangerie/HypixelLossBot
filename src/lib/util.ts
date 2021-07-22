@@ -1,5 +1,3 @@
-import { MessageEmbed } from 'discord.js';
-import HypixelAPI from 'hypixel-api-reborn';
 import fs from 'fs';
 
 export const RespondToInteraction = (client : any, interaction : any, data : any, type : number = 4) => {
@@ -7,12 +5,6 @@ export const RespondToInteraction = (client : any, interaction : any, data : any
 		type: type,
 		data: data
 	}})
-}
-
-const hypixel = new HypixelAPI.Client(process.env.HYPIXEL_TOKEN ?? "");
-
-export const GetHypixelApi = () => {
-	return hypixel;
 }
 
 function mapReviver(key : any, value : any) {

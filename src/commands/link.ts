@@ -1,6 +1,7 @@
 import { Client, MessageEmbed } from "discord.js";
+import getHypixelClient from "../hypixel/client";
 import GetDataManager from "../lib/data";
-import { GetHypixelApi, RespondToInteraction } from "../lib/util";
+import { RespondToInteraction } from "../lib/util";
 
 module.exports = {
     name: "link",
@@ -14,9 +15,9 @@ module.exports = {
         }
     ],
     async execute(args: any, interaction: any, client: Client) {
-        const hypixel = GetHypixelApi();
+        const hypixel = getHypixelClient();
 
-        const player = await hypixel.getPlayer(args.username).catch(err => undefined);
+        const player = await hypixel.getApi().getPlayer(args.username).catch(err => undefined);
 
         if(player == undefined) {
             RespondToInteraction(client, interaction, {
