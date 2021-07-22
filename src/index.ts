@@ -1,7 +1,7 @@
 require('dotenv').config();
 const insulter = require('insult');
 
-import Discord from 'discord.js';
+import Discord, { Guild } from 'discord.js';
 import fs from 'fs';
 import { Arcade, ArenaBrawl, BedWars, BlitzSurvivalGames, BuildBattle, CopsAndCrims, Duels, MegaWalls, MurderMystery, SkyWars, SmashHeroes, SpeedUHC, TNTGames, UHC, VampireZ } from 'hypixel-api-reborn';
 import GetDataManager from './lib/data';
@@ -27,12 +27,15 @@ if(process.env.HYPIXEL_TOKEN == undefined) {
 //#endregion
 
 const hypixelClient = GetHypixelApi();
-const client = new Discord.Client();
+const client = new Discord.Client({ ws: { intents: ['GUILDS'] } });
 
 //#region events
 client.once('ready', onBotReady);
 /* @ts-ignore */
-client.ws.on('INTERACTION_CREATE', onInteractionCreate)
+client.ws.on('INTERACTION_CREATE', onInteractionCreate);
+
+client.on("guildCreate", onGuildJoin);
+client.on("guildDelete", onGuildLeave);
 //#endregion
 
 //#region start
@@ -73,6 +76,16 @@ async function registerCommandsForGuild(guildId : string) : Promise<void> {
 async function registerSingleCommand(guildId : string, data : any) {
 	/* @ts-ignore */
 	await client.api.applications(client.user.id).guilds(guildId).commands.post(data);
+}
+
+async function onGuildJoin(guild : Guild) {
+	console.log(`[${guild.name}] Slash Commands Registered`);
+	await registerCommandsForGuild(guild.id);
+}
+
+async function onGuildLeave(guild : Guild) {
+	console.log(`Kicked From ${guild.name}`);
+	GetDataManager().removeNotifyChannel(guild.id);
 }
 
 interface InteractionData {
@@ -162,7 +175,7 @@ interface PlayerStats {
 const lastCycleStats = new Map<string, PlayerStats>();
 //Max requests = 120/min
 const MAX_REQUESTS_PER_MIN = 100;
-const INTERVAL_SEC = 60;
+const INTERVAL_SEC = 20;
 const MAX_REQUESTS_PER_CYCLE = (INTERVAL_SEC / 60) * MAX_REQUESTS_PER_MIN;
 setInterval(async () => {
 	if(!client || !client.readyAt) return;
