@@ -167,7 +167,7 @@ setInterval(async () => {
 				for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
 					const guild = client.guilds.cache.get(guildId);
 					if(!guild) continue;
-					const member = await guild.members.fetch(discordId);
+					const member = await guild.members.fetch(discordId).catch(() => {});
 					if(member) {
 						const chan = guild.channels.cache.get(channelId);
 						if(!chan) continue;

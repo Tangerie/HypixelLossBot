@@ -1,8 +1,8 @@
 # Dependency directories
 node_modules/
 jspm_packages/
-
 # Optional eslint cache
 .eslintcache
 
 .env
+data/*
