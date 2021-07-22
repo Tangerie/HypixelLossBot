@@ -182,7 +182,7 @@ setInterval(async () => {
 								fields: [
 									{
 										name: "Win streak lost",
-										value: player.stats.bedwars.winstreak
+										value: lastStats?.winstreak
 									}
 								]
 							}
