@@ -66,63 +66,123 @@ module.exports = {
             })
             return;
         }
-        
-        RespondToInteraction(client, interaction, {
-            embeds: [
+
+        const embeds = [{
+            title: `${player.nickname}'s All-Time Bedwars Stats`,
+            type: "rich",
+            color: 15844367,
+            fields: [
                 {
-                    title: `${player.nickname}'s Bedwars Stats`,
+                    name: "Wins",
+                    value: player.stats?.bedwars?.wins.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Losses",
+                    value: player.stats?.bedwars?.losses.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Win/Loss",
+                    value: player.stats?.bedwars?.WLRatio.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Kills",
+                    value: player.stats?.bedwars?.kills.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Deaths",
+                    value: player.stats?.bedwars?.deaths.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Kill/Death",
+                    value: player.stats?.bedwars?.KDRatio.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Final Kills",
+                    value: player.stats?.bedwars?.finalKills.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Final Deaths",
+                    value: player.stats?.bedwars?.finalDeaths.toString(),
+                    inline: true,
+                },
+                {
+                    name: "Final Kill/Death",
+                    value: player.stats?.bedwars?.finalKDRatio.toString(),
+                    inline: true,
+                },
+                
+            ]
+        }];
+
+        const period = GetDataManager().getRecordingPeriod(interaction.guild_id);
+
+        if(period) {
+            const stat = period.users.get(player.nickname);
+            if(stat) {
+                embeds.push({
+                    title: `${player.nickname}'s Recent Bedwars Stats`,
                     type: "rich",
                     color: 15844367,
                     fields: [
                         {
                             name: "Wins",
-                            value: player.stats?.bedwars?.wins.toString(),
+                            value: stat.wins.toString(),
                             inline: true,
                         },
                         {
                             name: "Losses",
-                            value: player.stats?.bedwars?.losses.toString(),
+                            value: stat.losses.toString(),
                             inline: true,
                         },
                         {
                             name: "Win/Loss",
-                            value: player.stats?.bedwars?.WLRatio.toString(),
+                            value: (stat.losses == 0 ? stat.wins : stat.wins / stat.losses).toString(),
                             inline: true,
                         },
                         {
                             name: "Kills",
-                            value: player.stats?.bedwars?.kills.toString(),
+                            value: stat.kills.toString(),
                             inline: true,
                         },
                         {
                             name: "Deaths",
-                            value: player.stats?.bedwars?.deaths.toString(),
+                            value: stat.deaths.toString(),
                             inline: true,
                         },
                         {
                             name: "Kill/Death",
-                            value: player.stats?.bedwars?.KDRatio.toString(),
+                            value: (stat.deaths == 0 ? stat.kills : stat.kills / stat.deaths).toString(),
                             inline: true,
                         },
                         {
                             name: "Final Kills",
-                            value: player.stats?.bedwars?.finalKills.toString(),
+                            value:stat.finalKills.toString(),
                             inline: true,
                         },
                         {
                             name: "Final Deaths",
-                            value: player.stats?.bedwars?.finalDeaths.toString(),
+                            value: stat.finalDeaths.toString(),
                             inline: true,
                         },
                         {
                             name: "Final Kill/Death",
-                            value: player.stats?.bedwars?.finalKDRatio.toString(),
+                            value: (stat.finalDeaths == 0 ? stat.finalKills : stat.finalKills / stat.finalDeaths).toString(),
                             inline: true,
                         },
-                        
                     ]
-                }
-            ]
+                })
+            }
+        }
+        
+        RespondToInteraction(client, interaction, {
+            embeds: embeds
         })
     }
 }
