@@ -5,18 +5,42 @@ import { GetHypixelApi, RespondToInteraction } from "../lib/util";
 module.exports = {
     name: "stats",
     description: "Get your bedwars stats",
-    options: [],
+    options: [
+        {
+            name: 'user',
+            description: 'Get the stats of another user',
+            required: false,
+            type: 6
+        }
+    ],
     async execute(args: any, interaction: any, client: Client) {
         const hypixel = GetHypixelApi();
 
-        const username = GetDataManager().getUsernameFromId(interaction.member.user.id);
+        if(args.user) {
+            const user = await client.users.fetch(args.user).catch(() => {});
+            if(!user || user.bot) {
+                RespondToInteraction(client, interaction, {
+                    embeds: [
+                        {
+                            title:"Invalid User",
+                            description: "They must not be a bot",
+                            type: "rich",
+                            color: 15158332
+                        }
+                    ]
+                })
+                return;
+            }
+        }
+
+        const username = GetDataManager().getUsernameFromId(args.user ?? interaction.member.user.id);
 
         if(!username) {
             RespondToInteraction(client, interaction, {
                 embeds: [
                     {
-                        title: `Minecraft Account Not Linked`,
-                        description: "Run /link <username> to link",
+                        title: args.user ? "No Minecraft account linked to user" : "Minecraft Account Not Linked",
+                        description: args.user ? undefined : "Run /link <username> to link",
                         type: "rich",
                         color: 15158332
                     }
