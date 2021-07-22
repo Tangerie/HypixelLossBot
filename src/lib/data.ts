@@ -35,12 +35,26 @@ class DataManager {
         return undefined;
     }
 
+    public removeUsername(username : string) {
+        this.users.delete(username);
+        this.saveUserFile();
+    }
+
     private saveUserFile() {
         SaveMapToJson(USER_FILE, this.users);
     }
 
     public setNotifyChannel(guild : string, channel : string) {
         this.notifyChannels.set(guild, channel);
+        this.saveNotifyFile();
+    }
+
+    public getNotifyChannel(guild : string) {
+        return this.notifyChannels.get(guild);
+    }
+
+    public removeNotifyChannel(guild : string) {
+        this.notifyChannels.delete(guild);
         this.saveNotifyFile();
     }
 

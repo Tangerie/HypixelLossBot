@@ -3,12 +3,17 @@ const insulter = require('insult');
 
 import Discord from 'discord.js';
 import fs from 'fs';
-import { BedWars } from 'hypixel-api-reborn';
+import { Arcade, ArenaBrawl, BedWars, BlitzSurvivalGames, BuildBattle, CopsAndCrims, Duels, MegaWalls, MurderMystery, SkyWars, SmashHeroes, SpeedUHC, TNTGames, UHC, VampireZ } from 'hypixel-api-reborn';
 import GetDataManager from './lib/data';
 import { GetHypixelApi, RespondToInteraction } from "./lib/util";
 
 
 //https://discord.com/oauth2/authorize?client_id=867366033572888608&scope=bot+applications.commands
+
+//Dev: https://discord.com/oauth2/authorize?client_id=867587115976884245&scope=bot+applications.commands
+
+
+
 //#region token checks
 if(process.env.DISCORD_TOKEN == undefined) {
 	console.error("No Discord Token Provided")
@@ -54,7 +59,7 @@ async function onBotReady() : Promise<void> {
 }
 
 async function registerCommandsForGuild(guildId : string) : Promise<void> {
-	for(const cmd of clientCommands.array()) {
+	await Promise.all(clientCommands.array().map(async cmd => {
 		await registerSingleCommand(guildId, {
 			data: {
 				name: cmd.name,
@@ -62,7 +67,7 @@ async function registerCommandsForGuild(guildId : string) : Promise<void> {
 				options: cmd.options
 			}
 		})
-	}
+	}))
 }
 
 async function registerSingleCommand(guildId : string, data : any) {
@@ -136,7 +141,25 @@ async function onInteractionCreate(interaction : any) {
 	await clientCommands.get(cmd).execute(args, interaction, client);
 }
 
-const lastCycleStats = new Map<string, BedWars>();
+interface PlayerStats {
+	skywars?: SkyWars,
+	bedwars?: BedWars,
+	uhc?: UHC,
+	speeduhc?: SpeedUHC,
+	murdermystery?: MurderMystery,
+	duels?: Duels,
+	buildbattle?: BuildBattle,
+	megawalls?: MegaWalls,
+	copsandcrims?: CopsAndCrims,
+	tntgames?: TNTGames,
+	smashheroes?: SmashHeroes,
+	vampirez?: VampireZ,
+	blitzsg?: BlitzSurvivalGames,
+	arena?: ArenaBrawl,
+	arcade?: Arcade
+};
+
+const lastCycleStats = new Map<string, PlayerStats>();
 //Max requests = 120/min
 const MAX_REQUESTS_PER_MIN = 120;
 const INTERVAL_SEC = 20;
@@ -157,12 +180,13 @@ setInterval(async () => {
 			//remove it and msg player
 			return;
 		} else if(!player.stats || !player.stats.bedwars) {
+			player.stats
 			return;
 		}
 
 		if(lastCycleStats.has(username)) {
 			const lastStats = lastCycleStats.get(username);
-			if(lastStats?.finalDeaths != player.stats.bedwars.finalDeaths) {
+			if(lastStats?.bedwars?.finalDeaths != player.stats.bedwars.finalDeaths) {
 				//Find servers of player
 				for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
 					const guild = client.guilds.cache.get(guildId);
@@ -182,7 +206,7 @@ setInterval(async () => {
 								fields: [
 									{
 										name: "Win streak lost",
-										value: lastStats?.winstreak
+										value: lastStats?.bedwars?.winstreak
 									}
 								]
 							}
@@ -192,7 +216,7 @@ setInterval(async () => {
 			}
 		}
 
-		lastCycleStats.set(username, player.stats.bedwars);
+		lastCycleStats.set(username, player.stats);
 	}
 	//Check player stats
 	//console.log("Checking Player Stats");

@@ -62,11 +62,22 @@ var DataManager = /** @class */ (function () {
         }
         return undefined;
     };
+    DataManager.prototype.removeUsername = function (username) {
+        this.users.delete(username);
+        this.saveUserFile();
+    };
     DataManager.prototype.saveUserFile = function () {
         util_1.SaveMapToJson(USER_FILE, this.users);
     };
     DataManager.prototype.setNotifyChannel = function (guild, channel) {
         this.notifyChannels.set(guild, channel);
+        this.saveNotifyFile();
+    };
+    DataManager.prototype.getNotifyChannel = function (guild) {
+        return this.notifyChannels.get(guild);
+    };
+    DataManager.prototype.removeNotifyChannel = function (guild) {
+        this.notifyChannels.delete(guild);
         this.saveNotifyFile();
     };
     DataManager.prototype.saveNotifyFile = function () {

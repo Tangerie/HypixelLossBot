@@ -73,6 +73,7 @@ var fs_1 = __importDefault(require("fs"));
 var data_1 = __importDefault(require("./lib/data"));
 var util_1 = require("./lib/util");
 //https://discord.com/oauth2/authorize?client_id=867366033572888608&scope=bot+applications.commands
+//Dev: https://discord.com/oauth2/authorize?client_id=867587115976884245&scope=bot+applications.commands
 //#region token checks
 if (process.env.DISCORD_TOKEN == undefined) {
     console.error("No Discord Token Provided");
@@ -152,42 +153,28 @@ function onBotReady() {
 }
 function registerCommandsForGuild(guildId) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, _b, cmd, e_3_1;
-        var e_3, _c;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
-                case 0:
-                    _d.trys.push([0, 5, 6, 7]);
-                    _a = __values(clientCommands.array()), _b = _a.next();
-                    _d.label = 1;
-                case 1:
-                    if (!!_b.done) return [3 /*break*/, 4];
-                    cmd = _b.value;
-                    return [4 /*yield*/, registerSingleCommand(guildId, {
-                            data: {
-                                name: cmd.name,
-                                description: cmd.description,
-                                options: cmd.options
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, Promise.all(clientCommands.array().map(function (cmd) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, registerSingleCommand(guildId, {
+                                        data: {
+                                            name: cmd.name,
+                                            description: cmd.description,
+                                            options: cmd.options
+                                        }
+                                    })];
+                                case 1:
+                                    _a.sent();
+                                    return [2 /*return*/];
                             }
-                        })];
-                case 2:
-                    _d.sent();
-                    _d.label = 3;
-                case 3:
-                    _b = _a.next();
-                    return [3 /*break*/, 1];
-                case 4: return [3 /*break*/, 7];
-                case 5:
-                    e_3_1 = _d.sent();
-                    e_3 = { error: e_3_1 };
-                    return [3 /*break*/, 7];
-                case 6:
-                    try {
-                        if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
-                    }
-                    finally { if (e_3) throw e_3.error; }
-                    return [7 /*endfinally*/];
-                case 7: return [2 /*return*/];
+                        });
+                    }); }))];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
     });
@@ -208,7 +195,7 @@ function registerSingleCommand(guildId, data) {
     });
 }
 function unpackInteraction(interaction) {
-    var e_4, _a;
+    var e_3, _a;
     var _b = interaction.data, name = _b.name, options = _b.options;
     var cmd = name.toLowerCase();
     var args = {};
@@ -220,12 +207,12 @@ function unpackInteraction(interaction) {
                 args[name_1] = value;
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (options_1_1 && !options_1_1.done && (_a = options_1.return)) _a.call(options_1);
             }
-            finally { if (e_4) throw e_4.error; }
+            finally { if (e_3) throw e_3.error; }
         }
     }
     return {
@@ -280,25 +267,27 @@ function onInteractionCreate(interaction) {
         });
     });
 }
+;
 var lastCycleStats = new Map();
 //Max requests = 120/min
 var MAX_REQUESTS_PER_MIN = 120;
 var INTERVAL_SEC = 20;
 var MAX_REQUESTS_PER_CYCLE = (INTERVAL_SEC / 60) * MAX_REQUESTS_PER_MIN;
 setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
-    var requestsMade, _a, _b, _c, username, discordId, player, lastStats, _d, _e, _f, guildId, channelId, guild, member, chan, e_5_1, e_6_1;
-    var e_6, _g, e_5, _h;
-    return __generator(this, function (_j) {
-        switch (_j.label) {
+    var requestsMade, _a, _b, _c, username, discordId, player, lastStats, _d, _e, _f, guildId, channelId, guild, member, chan, e_4_1, e_5_1;
+    var e_5, _g, e_4, _h;
+    var _j, _k;
+    return __generator(this, function (_l) {
+        switch (_l.label) {
             case 0:
                 if (!client || !client.readyAt)
                     return [2 /*return*/];
                 requestsMade = 0;
-                _j.label = 1;
+                _l.label = 1;
             case 1:
-                _j.trys.push([1, 14, 15, 16]);
+                _l.trys.push([1, 14, 15, 16]);
                 _a = __values(data_1.default().getUsers().entries()), _b = _a.next();
-                _j.label = 2;
+                _l.label = 2;
             case 2:
                 if (!!_b.done) return [3 /*break*/, 13];
                 _c = __read(_b.value, 2), username = _c[0], discordId = _c[1];
@@ -309,32 +298,33 @@ setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
                         noCaching: true
                     }).catch(function () { })];
             case 3:
-                player = _j.sent();
+                player = _l.sent();
                 requestsMade++;
                 if (!player) {
                     //remove it and msg player
                     return [2 /*return*/];
                 }
                 else if (!player.stats || !player.stats.bedwars) {
+                    player.stats;
                     return [2 /*return*/];
                 }
                 if (!lastCycleStats.has(username)) return [3 /*break*/, 11];
                 lastStats = lastCycleStats.get(username);
-                if (!((lastStats === null || lastStats === void 0 ? void 0 : lastStats.finalDeaths) != player.stats.bedwars.finalDeaths)) return [3 /*break*/, 11];
-                _j.label = 4;
+                if (!(((_j = lastStats === null || lastStats === void 0 ? void 0 : lastStats.bedwars) === null || _j === void 0 ? void 0 : _j.finalDeaths) != player.stats.bedwars.finalDeaths)) return [3 /*break*/, 11];
+                _l.label = 4;
             case 4:
-                _j.trys.push([4, 9, 10, 11]);
-                _d = (e_5 = void 0, __values(data_1.default().getAllNotify().entries())), _e = _d.next();
-                _j.label = 5;
+                _l.trys.push([4, 9, 10, 11]);
+                _d = (e_4 = void 0, __values(data_1.default().getAllNotify().entries())), _e = _d.next();
+                _l.label = 5;
             case 5:
                 if (!!_e.done) return [3 /*break*/, 8];
                 _f = __read(_e.value, 2), guildId = _f[0], channelId = _f[1];
                 guild = client.guilds.cache.get(guildId);
                 if (!guild)
                     return [3 /*break*/, 7];
-                return [4 /*yield*/, guild.members.fetch(discordId)];
+                return [4 /*yield*/, guild.members.fetch(discordId).catch(function () { })];
             case 6:
-                member = _j.sent();
+                member = _l.sent();
                 if (member) {
                     chan = guild.channels.cache.get(channelId);
                     if (!chan)
@@ -349,43 +339,43 @@ setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
                             fields: [
                                 {
                                     name: "Win streak lost",
-                                    value: player.stats.bedwars.winstreak
+                                    value: (_k = lastStats === null || lastStats === void 0 ? void 0 : lastStats.bedwars) === null || _k === void 0 ? void 0 : _k.winstreak
                                 }
                             ]
                         }
                     });
                 }
-                _j.label = 7;
+                _l.label = 7;
             case 7:
                 _e = _d.next();
                 return [3 /*break*/, 5];
             case 8: return [3 /*break*/, 11];
             case 9:
-                e_5_1 = _j.sent();
-                e_5 = { error: e_5_1 };
+                e_4_1 = _l.sent();
+                e_4 = { error: e_4_1 };
                 return [3 /*break*/, 11];
             case 10:
                 try {
                     if (_e && !_e.done && (_h = _d.return)) _h.call(_d);
                 }
-                finally { if (e_5) throw e_5.error; }
+                finally { if (e_4) throw e_4.error; }
                 return [7 /*endfinally*/];
             case 11:
-                lastCycleStats.set(username, player.stats.bedwars);
-                _j.label = 12;
+                lastCycleStats.set(username, player.stats);
+                _l.label = 12;
             case 12:
                 _b = _a.next();
                 return [3 /*break*/, 2];
             case 13: return [3 /*break*/, 16];
             case 14:
-                e_6_1 = _j.sent();
-                e_6 = { error: e_6_1 };
+                e_5_1 = _l.sent();
+                e_5 = { error: e_5_1 };
                 return [3 /*break*/, 16];
             case 15:
                 try {
                     if (_b && !_b.done && (_g = _a.return)) _g.call(_a);
                 }
-                finally { if (e_6) throw e_6.error; }
+                finally { if (e_5) throw e_5.error; }
                 return [7 /*endfinally*/];
             case 16: return [2 /*return*/];
         }
