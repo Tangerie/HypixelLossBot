@@ -56,7 +56,7 @@ module.exports = {
                     title: `Loserboard`,
                     description: desc.join("\n"),
                     type: "rich",
-                    color: 3066993
+                    color: 15844367
                 }
             ]
         });
