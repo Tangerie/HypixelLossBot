@@ -36,5 +36,5 @@ export function LoadMapToJson<K, V>(path : string) : Map<K, V> {
 }
 
 export function SaveMapToJson(path: string, map : Map<any, any>) {
-	fs.writeFileSync(path, JSON.stringify(map, mapReplacer));
+	fs.writeFileSync(path, JSON.stringify(map, mapReplacer, 4));
 }

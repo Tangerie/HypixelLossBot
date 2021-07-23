@@ -8,10 +8,9 @@ module.exports = {
     options: [],
     
     async execute(args: any, interaction: any, client: Client) {
-
         const period = GetDataManager().getRecordingPeriod(interaction.guild_id);
 
-        if(!period) {
+        if(!period || [...period.users.entries()].length == 0) {
             RespondToInteraction(client, interaction, {
                 embeds: [
                     {
@@ -28,12 +27,28 @@ module.exports = {
             return bStat.losses - aStat.losses;
         });
 
-        console.log(entries);
+        let placement = 0;
+
+        let desc = await Promise.all(entries.map(async ([user, stat]) => {
+            const user_id = GetDataManager().getUser(user);
+
+            if(!user_id) return;
+
+            const disUser = await client.users.fetch(user_id).catch(() => {});
+
+            if(!disUser) return;
+
+            placement++;
+            return `**${placement}**. ${disUser.username}#${disUser.discriminator} - ${stat.losses} Loss`;
+        }));
+
+        desc = desc.filter(x => x);
 
         RespondToInteraction(client, interaction, {
             embeds: [
                 {
-                    title: `Leadboard Coming`,
+                    title: `Loserboard`,
+                    description: desc.join("\n"),
                     type: "rich",
                     color: 3066993
                 }
