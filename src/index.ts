@@ -48,8 +48,8 @@ client.login(process.env.DISCORD_TOKEN);
 
 const clientCommands = new Discord.Collection<string, any>();
 
-async function onBotReady() : Promise<void> {
-	await client.user?.setActivity(`you fail`, {
+function onBotReady() {
+	client.user?.setActivity(`you fail`, {
 		type: "WATCHING",
 	});
 	
@@ -62,8 +62,10 @@ async function onBotReady() : Promise<void> {
 
 
 	for (const guild of client.guilds.cache.map((guild : any) => guild)) {
-		await registerCommandsForGuild(guild.id);
-		console.log(`[${guild.name}] Slash Commands Registered`);
+		console.log(`[${guild.name}] Started Slash Commands Registering`);
+		registerCommandsForGuild(guild.id).then(() => {
+			console.log(`[${guild.name}] Slash Commands Registered`);
+		})
 
 		if(!GetDataManager().getRecordingPeriod(guild.id)){
 			console.log(`[${guild.name}] Started Recording Period`);
