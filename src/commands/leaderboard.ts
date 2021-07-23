@@ -1,5 +1,6 @@
 import { Client } from "discord.js";
-import GetDataManager from "../lib/data";
+import { BedWars } from "hypixel-api-reborn";
+import GetDataManager, { StatRecord } from "../lib/data";
 import { RespondToInteraction } from "../lib/util";
 
 module.exports = {
@@ -22,9 +23,14 @@ module.exports = {
             })
             return;
         }
+
+        const getScore = (stat : StatRecord) => {
+            return stat.losses / (stat.wins + stat.losses);
+        }
+
         const entries = [...period.users.entries()];
         entries.sort(([aUser, aStat], [bUser, bStat]) => {
-            return bStat.losses - aStat.losses;
+            return getScore(bStat) - getScore(aStat);
         });
 
         let placement = 0;
@@ -39,7 +45,7 @@ module.exports = {
             if(!disUser) return;
 
             placement++;
-            return `**${placement}**. ${disUser.username}#${disUser.discriminator} - ${stat.losses} Loss`;
+            return `**${placement}**. ${disUser.username}#${disUser.discriminator} - ${Math.floor(getScore(stat) * 100)}% Lost [${stat.losses}/${stat.losses + stat.wins}]`;
         }));
 
         desc = desc.filter(x => x);

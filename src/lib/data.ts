@@ -9,7 +9,7 @@ const USER_FILE = DATA_PATH + "users.json";
 const NOTIFY_FILE = DATA_PATH + "notify.json";
 const STAT_FILE = DATA_PATH + "stats.json";
 
-interface StatRecord {
+export interface StatRecord {
     wins : number;
     losses : number;
     kills : number;
