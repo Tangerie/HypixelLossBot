@@ -192,7 +192,7 @@ async function onPlayerBedwarsLose(event : BedwarsWinLoseEvent) {
 		/* @ts-ignore */
 		chan.send({
 			embed: {
-				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) Lost a Bedwars match`,
+				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) lost a Bedwars match`,
 				description: `This is for you: ${insulter.Insult()}`,
 				type: "rich",
 				color: 15158332,
@@ -215,4 +215,30 @@ async function onPlayerBedwarsWin(event : BedwarsWinLoseEvent) {
 	if(!event.cur || !event.last || !disId) return;
 
 	GetDataManager().updatePlayersRecordings(event.player.nickname, disId, client, event.last, event.cur);
+
+	for(const [guildId, channelId] of GetDataManager().getAllNotify().entries()) {
+		const guild = client.guilds.cache.get(guildId);
+		if(!guild) continue;
+		const member = await guild.members.fetch(disId).catch(() => {});
+		if(!member) continue;
+		const chan = guild.channels.cache.get(channelId);
+		if(!chan) continue;
+
+		/* @ts-ignore */
+		chan.send({
+			embed: {
+				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) won a Bedwars match`,
+				description: `The rest of you are trash`,
+				type: "rich",
+				color: 3066993,
+				fields: [
+					{
+						name: "W/L Raised By",
+						value: (event.cur.wins / event.cur.losses - event.last.wins / event.last.losses).toString(),
+						inline: false
+					},
+				]
+			}
+		})
+	}
 }
