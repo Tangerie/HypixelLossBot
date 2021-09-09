@@ -63,8 +63,17 @@ class HypixelClient extends EventEmitter {
 
             if(!player || !player.stats?.bedwars) continue;
 
+            //Remove the 4v4 stats
+            player.stats.bedwars.wins -= player.stats.bedwars['4v4'].wins;
+            player.stats.bedwars.losses -= player.stats.bedwars['4v4'].losses;
+            player.stats.bedwars.finalKills -= player.stats.bedwars['4v4'].finalKills;
+            player.stats.bedwars.finalDeaths -= player.stats.bedwars['4v4'].finalDeaths;
+            player.stats.bedwars.kills -= player.stats.bedwars['4v4'].kills;
+            player.stats.bedwars.deaths -= player.stats.bedwars['4v4'].deaths;
+
             if(this.lastPlayerStats.has(username)) {
                 const lastStats = this.lastPlayerStats.get(username);
+
                 if(!lastStats?.bedwars) continue;
 
                 if(lastStats.bedwars.losses != player.stats.bedwars.losses) {

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const insulter = require('insult');
+const InsultCompliment = require("insult-compliment");
 
 import Discord, { Guild } from 'discord.js';
 import fs from 'fs';
@@ -228,7 +229,7 @@ async function onPlayerBedwarsWin(event : BedwarsWinLoseEvent) {
 		chan.send({
 			embed: {
 				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) won a Bedwars match`,
-				description: `The rest of you are trash`,
+				description: InsultCompliment.Compliment(),
 				type: "rich",
 				color: 3066993,
 				fields: [

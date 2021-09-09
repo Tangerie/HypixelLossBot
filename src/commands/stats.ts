@@ -74,12 +74,12 @@ module.exports = {
             fields: [
                 {
                     name: "Wins",
-                    value: player.stats?.bedwars?.wins.toString(),
+                    value: ((player.stats?.bedwars?.wins || 0) - (player.stats?.bedwars?.["4v4"].wins || 0)).toString(),
                     inline: true,
                 },
                 {
                     name: "Losses",
-                    value: player.stats?.bedwars?.losses.toString(),
+                    value: ((player.stats?.bedwars?.losses || 0) - (player.stats?.bedwars?.["4v4"].losses || 0)).toString(),
                     inline: true,
                 },
                 {

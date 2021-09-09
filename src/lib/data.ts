@@ -35,6 +35,10 @@ class DataManager {
     private recordingPeriods : Map<string, RecordingPeriod>;
 
     constructor() { 
+        if(!fs.existsSync("data/")) {
+            fs.mkdirSync("data");
+        }
+
         this.users = LoadMapToJson<string, string>(USER_FILE);
         this.notifyChannels = LoadMapToJson<string, string>(NOTIFY_FILE);
         this.recordingPeriods = LoadMapToJson<string, RecordingPeriod>(STAT_FILE);
@@ -116,7 +120,7 @@ class DataManager {
     }
 
     public async updatePlayersRecordings(username : string, discordId : string, client : Client, last : BedWars, cur : BedWars) {
-        console.log("Updating player recording for " + username);
+        //console.log("Updating player recording for " + username);
         for(const [guild, period] of this.recordingPeriods.entries()) {
             //You need to create the users dumbass
             if(!period.users.has(username)) {
