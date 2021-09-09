@@ -50,8 +50,12 @@ class HypixelClient extends EventEmitter {
         return this.api;
     }
 
-    public async getPlayer(username : string) {
-        return await this.api.getPlayer(username, this.apiOptions).catch(()=>{});
+    public async getPlayer(username : string) : Promise<HypixelAPI.Player | undefined> {
+        return await this.api.getPlayer(username, this.apiOptions).catch(()=>undefined);
+    }
+
+    public async getOnlineStatus(username : string) {
+        return await this.api.getStatus(username, this.apiOptions).catch(()=>undefined);
     }
 
     private async checkLoop() {

@@ -4,7 +4,14 @@ export const RespondToInteraction = (client : any, interaction : any, data : any
 	client.api.interactions(interaction.id, interaction.token).callback.post({data: {
 		type: type,
 		data: data
-	}})
+	}});
+}
+
+export const UpdateResponseMsg = async (client : any, interaction : any, data : any, type : number = 4) => {
+	client.api.webhooks(client.user.id, interaction.token).post({
+		type: type,
+		data: data
+	});
 }
 
 function mapReviver(key : any, value : any) {
