@@ -29,9 +29,18 @@ module.exports = {
             return stat.losses / (stat.wins + stat.losses);
         }
 
-        const createLines = async (entries : [string, StatRecord][]) => {
-            let placement = 0;
-            return await Promise.all(entries.map(async ([user, stat]) => {
+        const entries = [...period.users.entries()];
+        entries.sort(([aUser, aStat], [bUser, bStat]) => {
+            return getScore(bStat) - getScore(aStat);
+        });  
+        
+        const validEntries = entries.filter(x => x[1].losses + x[1].wins >= 10);
+        const pendingEntries = entries.filter(x => x[1].losses + x[1].wins < 10 && x[1].losses + x[1].wins > 0);
+
+        let desc : (string | undefined)[] = [];
+        let placement = 0;
+        if(validEntries.length > 0) {
+            desc = await Promise.all(validEntries.map(async ([user, stat]) => {
                 const user_id = GetDataManager().getUser(user);
                 if(!user_id) return;
     
@@ -44,22 +53,17 @@ module.exports = {
             }));
         }
 
-        const entries = [...period.users.entries()];
-        entries.sort(([aUser, aStat], [bUser, bStat]) => {
-            return getScore(bStat) - getScore(aStat);
-        });  
-        
-        const validEntries = entries.filter(x => x[1].losses + x[1].wins >= 10);
-        const pendingEntries = entries.filter(x => x[1].losses + x[1].wins < 10 && x[1].losses + x[1].wins > 0);
-
-        let desc : (string | undefined)[] = [];
-
-        if(validEntries.length > 0) {
-            desc = await createLines(validEntries);
-        }
-
         if(pendingEntries.length > 0) {
-            desc = [...desc, "\n**Unranked**", ...await createLines(pendingEntries)];
+            desc = [...desc, "\n**Unranked**", ...await Promise.all(pendingEntries.map(async ([user, stat]) => {
+                const user_id = GetDataManager().getUser(user);
+                if(!user_id) return;
+    
+                const disUser = await client.users.fetch(user_id).catch(() => {});
+    
+                if(!disUser) return;
+
+                return `${disUser.username}#${disUser.discriminator} - ${stat.losses + stat.wins} Matches Played`;
+            }).sort((a, b) => Math.random()))];
         }
         
         desc = desc.filter(x => x);
