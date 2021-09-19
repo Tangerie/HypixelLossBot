@@ -194,7 +194,7 @@ async function onPlayerBedwarsLose(event : BedwarsWinLoseEvent) {
 		chan.send({
 			embed: {
 				title: `${member.displayName} (${member.user.username}#${member.user.discriminator}) lost a Bedwars match`,
-				description: `This is for you: ${insulter.Insult()}`,
+				description: `This is for you: ${getInsult()}`,
 				type: "rich",
 				color: 15158332,
 				fields: [
@@ -207,6 +207,15 @@ async function onPlayerBedwarsLose(event : BedwarsWinLoseEvent) {
 			}
 		})
 	}
+}
+
+function getInsult() {
+	let ins : string = insulter.Insult();
+	while(ins.includes("women")) {
+		ins = insulter.Insult();
+	}
+
+	return ins;
 }
 
 async function onPlayerBedwarsWin(event : BedwarsWinLoseEvent) {

@@ -1,4 +1,4 @@
-import { Client } from "discord.js";
+import { Client, TextChannel } from "discord.js";
 import getHypixelClient from "../hypixel/client";
 import GetDataManager from "../lib/data";
 import { RespondToInteraction, UpdateResponseMsg } from "../lib/util";
